@@ -1,0 +1,35 @@
+.header {
+  background: #fff;
+  box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  padding: calc(min(15px, 2.25dvw) / 2) min(15px, 2.25dvw);
+  gap: min(15px, 2.25dvw);
+}
+
+.main {
+  background: #fff;
+  box-shadow: 0 0 2px 0 #0000001f, 0 1px 2px 0 #0000003d;
+  margin: min(15px, 2.25dvw) auto;
+  padding: min(15px, 2.25dvw);
+  width: min(calc(100% - min(15px, 2.25dvw) * 2), 980px);
+}
+
+.table {
+  border-collapse: collapse;
+  font-size: 1.35rem;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.table,
+.th,
+.td {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.th:not(:nth-child(1)),
+.td:not(:nth-child(1)) {
+  padding: calc(min(15px, 2.25dvw) / 4) calc(min(15px, 2.25dvw) / 2);
+}
