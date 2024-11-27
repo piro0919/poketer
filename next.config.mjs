@@ -8,6 +8,7 @@ await jiti.import("./src/env", { default: true });
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
+    missingSuspenseWithCSRBailout: false,
     typedRoutes: true,
   },
   images: {
