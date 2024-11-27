@@ -1,26 +1,35 @@
 "use client";
-import { Pokemon, PokemonSpecies } from "pokenode-ts";
-import { useMemo, useState } from "react";
+import { IconFilter, IconSearch } from "@tabler/icons-react";
 import {
+  SortingState,
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import styles from "./style.module.css";
+import { camelCase } from "change-case";
 import Image from "next/image";
-import { IconSearch, IconArrowsSort } from "@tabler/icons-react";
+import {
+  parseAsArrayOf,
+  parseAsString,
+  parseAsStringLiteral,
+  useQueryState,
+} from "nuqs";
+import { Pokemon, PokemonSpecies } from "pokenode-ts";
+import { useMemo, useState } from "react";
 import Spacer from "react-spacer";
+import FilterModal from "../FilterModal";
 import SearchModal from "../SearchModal";
 import SortModal from "../SortModal";
+import styles from "./style.module.css";
 
 type PokemonData = {
   aBaseStat: number;
   bBaseStat: number;
   cBaseStat: number;
   dBaseStat: number;
+  enableAttackTypeFilter: boolean;
   frontFefault: string | null;
   hBaseStat: number;
   name: string;
@@ -29,7 +38,6 @@ type PokemonData = {
 };
 
 const columnHelper = createColumnHelper<PokemonData>();
-
 const columns = [
   columnHelper.accessor("frontFefault", {
     cell: (info) => (
@@ -44,12 +52,46 @@ const columns = [
     header: "HP",
   }),
   columnHelper.accessor("aBaseStat", {
+    cell: (info) => {
+      const {
+        row: {
+          original: { aBaseStat, cBaseStat, enableAttackTypeFilter },
+        },
+      } = info;
+
+      if (!enableAttackTypeFilter) {
+        return info.renderValue();
+      }
+
+      return (
+        <span style={{ opacity: aBaseStat >= cBaseStat ? 1 : 0.25 }}>
+          {info.renderValue()}
+        </span>
+      );
+    },
     header: "攻撃",
   }),
   columnHelper.accessor("bBaseStat", {
     header: "防御",
   }),
   columnHelper.accessor("cBaseStat", {
+    cell: (info) => {
+      const {
+        row: {
+          original: { aBaseStat, cBaseStat, enableAttackTypeFilter },
+        },
+      } = info;
+
+      if (!enableAttackTypeFilter) {
+        return info.renderValue();
+      }
+
+      return (
+        <span style={{ opacity: cBaseStat >= aBaseStat ? 1 : 0.25 }}>
+          {info.renderValue()}
+        </span>
+      );
+    },
     header: "特攻",
   }),
   columnHelper.accessor("dBaseStat", {
@@ -76,71 +118,138 @@ export default function App({ pokemons }: AppProps): JSX.Element {
       pokemons.map(({ pokemon, pokemonSpecies }) => ({
         ...pokemon,
         ...pokemonSpecies.names.find(
-          ({ language: { name } }) => name === "ja-Hrkt"
+          ({ language: { name } }) => name === "ja-Hrkt",
         ),
       })),
-    [pokemons]
+    [pokemons],
+  );
+  const [attackType] = useQueryState(
+    "attack_type",
+    parseAsStringLiteral(["max"] as const),
+  );
+  const [filters] = useQueryState("filters", parseAsArrayOf(parseAsString));
+  const enableAttackTypeFilter = useMemo(
+    () => attackType === "max",
+    [attackType],
+  );
+  const typeFilters = useMemo(
+    () =>
+      filters
+        ?.map((filter) => {
+          const match = filter.match(/(\w+)\[(\w+)\](\w+)/);
+
+          if (!match) {
+            return undefined;
+          }
+
+          const [, name, compare, value] = match;
+
+          return {
+            compare: camelCase(compare),
+            name,
+            value: parseInt(value, 10),
+          };
+        })
+        .filter((filter): filter is NonNullable<typeof filter> => !!filter),
+    [filters],
   );
   const data = useMemo(
     () =>
-      jaPokemons.map(
-        ({
-          name,
-          sprites: { front_default: frontFefault },
-          stats: [
-            { base_stat: hBaseStat },
-            { base_stat: aBaseStat },
-            { base_stat: bBaseStat },
-            { base_stat: cBaseStat },
-            { base_stat: dBaseStat },
-            { base_stat: sBaseStat },
-          ],
-        }) => ({
-          aBaseStat,
-          bBaseStat,
-          cBaseStat,
-          dBaseStat,
-          frontFefault,
-          hBaseStat,
-          name,
-          sBaseStat,
-          total:
-            aBaseStat +
-            bBaseStat +
-            cBaseStat +
-            dBaseStat +
-            hBaseStat +
+      jaPokemons
+        .map(
+          ({
+            name,
+            sprites: { front_default: frontFefault },
+            stats: [
+              { base_stat: hBaseStat },
+              { base_stat: aBaseStat },
+              { base_stat: bBaseStat },
+              { base_stat: cBaseStat },
+              { base_stat: dBaseStat },
+              { base_stat: sBaseStat },
+            ],
+          }) => ({
+            aBaseStat,
+            bBaseStat,
+            cBaseStat,
+            dBaseStat,
+            enableAttackTypeFilter,
+            frontFefault,
+            hBaseStat,
+            name,
             sBaseStat,
-        })
-      ),
-    [jaPokemons]
+            total:
+              bBaseStat +
+              dBaseStat +
+              hBaseStat +
+              sBaseStat +
+              (enableAttackTypeFilter
+                ? Math.max(aBaseStat, cBaseStat)
+                : aBaseStat + cBaseStat),
+          }),
+        )
+        .filter(
+          ({
+            aBaseStat,
+            bBaseStat,
+            cBaseStat,
+            dBaseStat,
+            hBaseStat,
+            sBaseStat,
+            total,
+          }) =>
+            typeFilters?.every(({ compare, name, value }) => {
+              const statMap = {
+                a: aBaseStat,
+                b: bBaseStat,
+                c: cBaseStat,
+                d: dBaseStat,
+                h: hBaseStat,
+                s: sBaseStat,
+                t: total,
+              };
+              const compareMap = {
+                default: (): boolean => true,
+                equals: (a: number, b: number): boolean => a === b,
+                greaterThan: (a: number, b: number): boolean => a >= b,
+                lessThan: (a: number, b: number): boolean => a <= b,
+              } as const;
+              const compareFunc =
+                compareMap[compare as keyof typeof compareMap] ??
+                compareMap.default;
+
+              return compareFunc(statMap[name as keyof typeof statMap], value);
+            }) ?? true,
+        ),
+    [enableAttackTypeFilter, jaPokemons, typeFilters],
   );
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
     columns,
     data,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
     state: {
       sorting,
     },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
   const [openId, setOpenId] = useState("");
-
-  console.log(jaPokemons[0]);
 
   return (
     <>
       <header className={styles.header}>
         <h1>ポケター</h1>
         <Spacer grow={1} />
-        <button onClick={() => setOpenId("sort")}>
-          <IconArrowsSort />
+        <button onClick={() => setOpenId("filter")}>
+          <IconFilter />
         </button>
         <button onClick={() => setOpenId("search")}>
           <IconSearch />
         </button>
+        {/* <button onClick={() => setOpenId("sort")}>
+          <IconArrowsSort />
+        </button> */}
       </header>
       <main className={styles.main}>
         <table className={styles.table}>
@@ -153,7 +262,7 @@ export default function App({ pokemons }: AppProps): JSX.Element {
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </th>
                 ))}
@@ -173,8 +282,9 @@ export default function App({ pokemons }: AppProps): JSX.Element {
           </tbody>
         </table>
       </main>
-      <SortModal open={openId === "sort"} onClose={() => setOpenId("")} />
-      <SearchModal open={openId === "search"} onClose={() => setOpenId("")} />
+      <FilterModal onClose={() => setOpenId("")} open={openId === "filter"} />
+      <SearchModal onClose={() => setOpenId("")} open={openId === "search"} />
+      <SortModal onClose={() => setOpenId("")} open={openId === "sort"} />
     </>
   );
 }

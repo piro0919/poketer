@@ -1,0 +1,21 @@
+.fieldsWrapper {
+  padding: min(15px, 2.25dvw);
+}
+
+.field {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.buttonsWrapper {
+  background: #f2f2f2;
+  display: flex;
+  justify-content: flex-end;
+  padding: min(15px, 2.25dvw);
+}
+
+.button {
+  background: #e40b20 !important;
+  font-size: 1.5rem;
+}
