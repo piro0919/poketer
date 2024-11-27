@@ -1,11 +1,13 @@
 import pLimit from "p-limit";
-import { Pokemon, PokemonClient, PokemonSpecies } from "pokenode-ts";
+import { Name, Pokemon, PokemonClient, PokemonSpecies } from "pokenode-ts";
 import sleep from "sleep-promise";
 import App from "./_components/App";
 
 type PokemonData = {
-  pokemon: Pokemon;
-  pokemonSpecies: PokemonSpecies;
+  pokemon: Pick<Pokemon, "sprites" | "stats">;
+  pokemonSpecies: {
+    name: Name;
+  };
 };
 
 const CONCURRENT_REQUESTS = 10;
@@ -63,7 +65,17 @@ class PokemonService {
         return null;
       }
 
-      return { pokemon, pokemonSpecies };
+      return {
+        pokemon: {
+          sprites: pokemon.sprites,
+          stats: pokemon.stats,
+        },
+        pokemonSpecies: {
+          name: pokemonSpecies.names.find(
+            ({ language: { name } }) => name === "ja-Hrkt",
+          )!,
+        },
+      };
     } catch (error) {
       console.error(`Failed to fetch data for ${name}:`, error);
 

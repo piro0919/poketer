@@ -16,7 +16,7 @@ import {
   parseAsStringLiteral,
   useQueryState,
 } from "nuqs";
-import { Pokemon, PokemonSpecies } from "pokenode-ts";
+import { Name, Pokemon } from "pokenode-ts";
 import { useMemo, useState } from "react";
 import Spacer from "react-spacer";
 import FilterModal from "../FilterModal";
@@ -107,22 +107,14 @@ const columns = [
 
 export type AppProps = {
   pokemons: {
-    pokemon: Pokemon;
-    pokemonSpecies: PokemonSpecies;
+    pokemon: Pick<Pokemon, "sprites" | "stats">;
+    pokemonSpecies: {
+      name: Name;
+    };
   }[];
 };
 
 export default function App({ pokemons }: AppProps): JSX.Element {
-  const jaPokemons = useMemo(
-    () =>
-      pokemons.map(({ pokemon, pokemonSpecies }) => ({
-        ...pokemon,
-        ...pokemonSpecies.names.find(
-          ({ language: { name } }) => name === "ja-Hrkt",
-        ),
-      })),
-    [pokemons],
-  );
   const [attackType] = useQueryState(
     "attack_type",
     parseAsStringLiteral(["max"] as const),
@@ -155,19 +147,23 @@ export default function App({ pokemons }: AppProps): JSX.Element {
   );
   const data = useMemo(
     () =>
-      jaPokemons
+      pokemons
         .map(
           ({
-            name,
-            sprites: { front_default: frontFefault },
-            stats: [
-              { base_stat: hBaseStat },
-              { base_stat: aBaseStat },
-              { base_stat: bBaseStat },
-              { base_stat: cBaseStat },
-              { base_stat: dBaseStat },
-              { base_stat: sBaseStat },
-            ],
+            pokemon: {
+              sprites: { front_default: frontFefault },
+              stats: [
+                { base_stat: hBaseStat },
+                { base_stat: aBaseStat },
+                { base_stat: bBaseStat },
+                { base_stat: cBaseStat },
+                { base_stat: dBaseStat },
+                { base_stat: sBaseStat },
+              ],
+            },
+            pokemonSpecies: {
+              name: { name },
+            },
           }) => ({
             aBaseStat,
             bBaseStat,
@@ -221,7 +217,7 @@ export default function App({ pokemons }: AppProps): JSX.Element {
               return compareFunc(statMap[name as keyof typeof statMap], value);
             }) ?? true,
         ),
-    [enableAttackTypeFilter, jaPokemons, typeFilters],
+    [enableAttackTypeFilter, pokemons, typeFilters],
   );
   const [sorting, setSorting] = useState<SortingState>([]);
   const table = useReactTable({
