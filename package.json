@@ -59,7 +59,7 @@
     "eslint-plugin-unused-imports": "4.1.4",
     "eslint-plugin-write-good-comments": "0.2.0",
     "jiti": "2.4.2",
-    "knip": "5.57.2",
+    "knip": "5.58.0",
     "lefthook": "1.11.13",
     "prettier": "3.5.3",
     "secretlint": "9.3.3",
