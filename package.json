@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@hookform/error-message": "2.0.1",
-    "@hookform/resolvers": "5.2.1",
+    "@hookform/resolvers": "5.2.2",
     "@material/react-button": "0.15.0",
     "@t3-oss/env-nextjs": "0.13.8",
     "@tabler/icons-react": "3.34.1",
