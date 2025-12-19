@@ -3,11 +3,11 @@
     "@hookform/error-message": "2.0.1",
     "@hookform/resolvers": "5.2.2",
     "@material/react-button": "0.15.0",
-    "@t3-oss/env-nextjs": "0.13.8",
-    "@tabler/icons-react": "3.35.0",
+    "@t3-oss/env-nextjs": "0.13.10",
+    "@tabler/icons-react": "3.36.0",
     "@tanstack/react-table": "8.21.3",
     "change-case": "5.4.4",
-    "i18next": "25.7.2",
+    "i18next": "25.7.3",
     "next": "15.5.9",
     "nuqs": "2.8.5",
     "p-limit": "7.2.0",
@@ -21,7 +21,7 @@
     "react-toggle": "4.1.3",
     "ress": "5.0.2",
     "sleep-promise": "9.1.0",
-    "zod": "4.1.13",
+    "zod": "4.2.1",
     "zod-i18n-map": "2.27.0"
   },
   "devDependencies": {
