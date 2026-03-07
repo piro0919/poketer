@@ -4,7 +4,7 @@
     "@hookform/resolvers": "5.2.2",
     "@material/react-button": "0.15.0",
     "@t3-oss/env-nextjs": "0.13.10",
-    "@tabler/icons-react": "3.39.0",
+    "@tabler/icons-react": "3.40.0",
     "@tanstack/react-table": "8.21.3",
     "change-case": "5.4.4",
     "i18next": "25.8.14",
