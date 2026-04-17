@@ -7,7 +7,7 @@
     "@tabler/icons-react": "3.41.1",
     "@tanstack/react-table": "8.21.3",
     "change-case": "5.4.4",
-    "i18next": "26.0.4",
+    "i18next": "26.0.5",
     "next": "15.5.15",
     "nuqs": "2.8.9",
     "p-limit": "7.3.0",
